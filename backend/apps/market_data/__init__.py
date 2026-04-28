@@ -1,0 +1,1 @@
+# Archivo de inicialización de la aplicación market_data

@@ -1,0 +1,52 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=postgresql://mt5_user:mt5_password@db:5432/mt5_market_data
+      - POSTGRES_DB=mt5_market_data
+      - POSTGRES_USER=mt5_user
+      - POSTGRES_PASSWORD=mt5_password
+      - POSTGRES_HOST=db
+      - MT5_USERNAME=25314638
+      - MT5_PASSWORD=E$$AJd3}3^;%F
+      - MT5_URL=https://www.tickmill.com/trade
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    ports:
+      - "3003:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8001/api
+
+  db:
+    image: postgres:15
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_DB=mt5_market_data
+      - POSTGRES_USER=mt5_user
+      - POSTGRES_PASSWORD=mt5_password
+    volumes:
+      - mt5_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mt5_user -d mt5_market_data"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mt5_data:
